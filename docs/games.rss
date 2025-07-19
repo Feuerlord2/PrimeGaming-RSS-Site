@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Prime Gaming RSS GAMES</title>
+    <link>https://feuerlord2.github.io/PrimeGaming-RSS-Site/</link>
+    <description>Awesome RSS Feeds about Prime Gaming games offers!</description>
+    <managingEditor>DanielWinterEmsdetten+rss@gmail.com (Daniel Winter)</managingEditor>
+    <pubDate>Sat, 19 Jul 2025 17:22:12 +0000</pubDate>
+    <item>
+      <title>No games offers available</title>
+      <link>https://gaming.amazon.com/home</link>
+      <description>No games offers</description>
+      <content:encoded><![CDATA[Currently no games offers are available on Prime Gaming.]]></content:encoded>
+      <pubDate>Sat, 19 Jul 2025 17:22:12 +0000</pubDate>
+    </item>
+  </channel>
+</rss>
