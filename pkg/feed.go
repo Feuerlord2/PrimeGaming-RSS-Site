@@ -178,14 +178,38 @@ func parseProducts(doc *goquery.Document, category string) ([]Product, error) {
 
 	switch category {
 	case "games":
-		// Look for free games section
-		selector := `[data-a-target="offer-list-FGWP_FULL"] .item-card__action > a:first-child`
-		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
-			product := extractProductFromElement(s, "game")
-			if product.TileShortName != "" {
-				products = append(products, product)
+		// Look for free games section - try multiple selectors
+		selectors := []string{
+			`[data-a-target="offer-list-FGWP_FULL"] .item-card__action > a:first-child`,
+			`[data-a-target="offer-list-FGWP_FULL"] .item-card`,
+			`.item-card`, // More generic
+			`[data-a-target*="FGWP"] .item-card`,
+		}
+		
+		for _, selector := range selectors {
+			doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+				product := extractProductFromElement(s, "game")
+				if product.TileShortName != "" {
+					// Check if we already have this product (avoid duplicates)
+					isDuplicate := false
+					for _, existing := range products {
+						if existing.TileShortName == product.TileShortName {
+							isDuplicate = true
+							break
+						}
+					}
+					if !isDuplicate {
+						products = append(products, product)
+					}
+				}
+			})
+			
+			// If we found products with this selector, stop trying others
+			if len(products) > 0 {
+				break
 			}
-		})
+		}
+		
 	case "loot":
 		// Look for in-game loot section
 		selector := `[data-a-target="offer-list-IN_GAME_LOOT"] .item-card__action > a:first-child`
