@@ -147,7 +147,7 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		}),
 		
 		// Wait for content to load after scrolling
-		chromedp.Sleep(2*time.Second),
+		chromedp.Sleep(5*time.Second),
 		
 		// Get the HTML content
 		chromedp.OuterHTML("html", &htmlContent),
