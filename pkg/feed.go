@@ -133,9 +133,17 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		
 		// Scroll to bottom to load all content
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			return chromedp.Evaluate(`
-				window.scrollTo(0, document.body.scrollHeight);
-			`, nil).Do(ctx)
+			// Scroll down multiple times to trigger lazy loading
+			for i := 0; i < 3; i++ {
+				if err := chromedp.Evaluate(`
+					window.scrollTo(0, document.body.scrollHeight);
+				`, nil).Do(ctx); err != nil {
+					return err
+				}
+				// Wait between scrolls
+				time.Sleep(1 * time.Second)
+			}
+			return nil
 		}),
 		
 		// Wait for content to load after scrolling
