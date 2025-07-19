@@ -2,8 +2,8 @@ package goprimegaming
 
 import (
 	"bufio"
+	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"sort"
 	"strings"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/chromedp/chromedp"
 	"github.com/gorilla/feeds"
 	log "github.com/sirupsen/logrus"
 )
@@ -35,11 +36,9 @@ func createFeed(products []Product, category string) (feeds.Feed, error) {
 
 	feed.Items = make([]*feeds.Item, len(products))
 	for idx, product := range products {
-		// Parse the start date
 		var dt time.Time
 		var err error
 		if product.StartDateDatetime != "" {
-			// Try parsing different date formats
 			layouts := []string{
 				time.RFC3339,
 				"2006-01-02T15:04:05",
@@ -80,7 +79,6 @@ func createFeed(products []Product, category string) (feeds.Feed, error) {
 		}
 	}
 
-	// Sort items so that latest offers are on the top
 	sort.Slice(feed.Items, func(i, j int) bool { 
 		return feed.Items[i].Created.After(feed.Items[j].Created) 
 	})
@@ -88,164 +86,120 @@ func createFeed(products []Product, category string) (feeds.Feed, error) {
 	return feed, nil
 }
 
+func scrapeWithBrowser(category string) ([]Product, error) {
+	var products []Product
+	
+	// Create context
+	ctx, cancel := chromedp.NewContext(context.Background())
+	defer cancel()
+
+	// Set timeout
+	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+
+	var htmlContent string
+	
+	err := chromedp.Run(ctx,
+		// Navigate to the page
+		chromedp.Navigate("https://gaming.amazon.com/home"),
+		
+		// Wait for page to load
+		chromedp.WaitVisible(".offer-list__content", chromedp.ByQuery),
+		
+		// Click on the appropriate tab based on category
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			if category == "games" {
+				// Click on Games tab
+				return chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
+			}
+			// For loot, we don't need to click any tab as it's the default view
+			return nil
+		}),
+		
+		// Wait a bit for content to load after tab click
+		chromedp.Sleep(2*time.Second),
+		
+		// Scroll to bottom to load all content
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			return chromedp.Evaluate(`
+				window.scrollTo(0, document.body.scrollHeight);
+			`, nil).Do(ctx)
+		}),
+		
+		// Wait for content to load after scrolling
+		chromedp.Sleep(2*time.Second),
+		
+		// Get the HTML content
+		chromedp.OuterHTML("html", &htmlContent),
+	)
+
+	if err != nil {
+		return products, fmt.Errorf("failed to scrape with browser: %v", err)
+	}
+
+	// Parse the HTML with goquery
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		return products, fmt.Errorf("failed to parse HTML: %v", err)
+	}
+
+	return parseProducts(doc, category)
+}
+
 func parseProducts(doc *goquery.Document, category string) ([]Product, error) {
 	var products []Product
 
-	// First try to find any offer cards on the page
-	doc.Find(".item-card, .offer-card, [class*='card']").Each(func(i int, s *goquery.Selection) {
-		// Try multiple possible selectors for title
-		title := ""
-		titleSelectors := []string{
-			"h3",
-			".item-card-details__body__primary h3",
-			"[class*='title']",
-			"[class*='name']",
-			".title",
-			".name",
-		}
-		
-		for _, selector := range titleSelectors {
-			titleElement := s.Find(selector)
-			if titleElement.Length() > 0 {
-				title = strings.TrimSpace(titleElement.First().Text())
-				if title != "" {
-					break
-				}
+	switch category {
+	case "games":
+		// Look for free games section
+		selector := `[data-a-target="offer-list-FGWP_FULL"] .item-card__action > a:first-child`
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			product := extractProductFromElement(s, "game")
+			if product.TileShortName != "" {
+				products = append(products, product)
 			}
-		}
-
-		if title == "" {
-			return // Skip if no title found
-		}
-
-		// Try to find URL
-		productURL := ""
-		urlSelectors := []string{
-			"a",
-			"[href]",
-		}
-		
-		for _, selector := range urlSelectors {
-			linkElement := s.Find(selector)
-			if linkElement.Length() > 0 {
-				href, exists := linkElement.Attr("href")
-				if exists && href != "" {
-					productURL = href
-					break
-				}
-			}
-		}
-
-		// If we're inside an <a> tag, get href from parent
-		if productURL == "" {
-			if href, exists := s.Attr("href"); exists {
-				productURL = href
-			}
-		}
-
-		// Try to find image
-		imgURL := ""
-		imgSelectors := []string{
-			"img",
-			"[src]",
-		}
-		
-		for _, selector := range imgSelectors {
-			imgElement := s.Find(selector)
-			if imgElement.Length() > 0 {
-				src, exists := imgElement.Attr("src")
-				if exists && src != "" {
-					imgURL = src
-					break
-				}
-			}
-		}
-
-		// Determine if this is a game or loot based on context or category filter
-		offerType := category
-		if category == "games" {
-			// Check if this looks like a game offer
-			if strings.Contains(strings.ToLower(s.Text()), "free game") || 
-			   strings.Contains(strings.ToLower(s.Text()), "claim now") {
-				offerType = "game"
-			}
-		} else if category == "loot" {
-			// Check if this looks like loot
-			if strings.Contains(strings.ToLower(s.Text()), "loot") || 
-			   strings.Contains(strings.ToLower(s.Text()), "in-game") {
-				offerType = "loot"
+		})
+	case "loot":
+		// Look for in-game loot section
+		selector := `[data-a-target="offer-list-IN_GAME_LOOT"] .item-card__action > a:first-child`
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			product := extractProductFromElement(s, "loot")
+			if product.TileShortName != "" {
+				// Extract game title for loot items
+				gameTitle := strings.TrimSpace(s.Find(".item-card-details__body p").First().Text())
+				product.GameTitle = gameTitle
 				
-				// Try to extract game title for loot
-				gameTitle := ""
-				gameTitleSelectors := []string{
-					".item-card-details__body p",
-					"p",
-					"[class*='game']",
-					"[class*='subtitle']",
-				}
-				
-				for _, selector := range gameTitleSelectors {
-					gameElement := s.Find(selector)
-					if gameElement.Length() > 0 {
-						gameTitle = strings.TrimSpace(gameElement.First().Text())
-						if gameTitle != "" && gameTitle != title {
-							break
-						}
-					}
-				}
-				
+				// Combine game title and loot title
 				if gameTitle != "" {
-					title = fmt.Sprintf("%s - %s", gameTitle, title)
+					product.TileShortName = fmt.Sprintf("%s - %s", gameTitle, product.TileShortName)
 				}
+				
+				products = append(products, product)
 			}
-		}
+		})
+	}
 
-		product := Product{
-			TileShortName:          title,
-			TileName:               title,
-			ProductURL:             productURL,
-			DetailedMarketingBlurb: title,
-			ShortMarketingBlurb:    title,
-			StartDateDatetime:      time.Now().Format(time.RFC3339),
-			EndDateDatetime:        "",
-			TileImage:              imgURL,
-			Category:               offerType,
-			Type:                   offerType,
-		}
-
-		products = append(products, product)
-	})
-
-	// If we still don't have products, try a more generic approach
+	// If no products found with specific selectors, try more generic approach
 	if len(products) == 0 {
-		doc.Find("a[href*='/dp/'], a[href*='/loot/'], a[href*='/game/']").Each(func(i int, s *goquery.Selection) {
-			title := strings.TrimSpace(s.Text())
-			if title == "" {
-				title = strings.TrimSpace(s.Find("*").Text())
+		log.WithField("category", category).Info("No products found with specific selectors, trying generic approach")
+		
+		// Try to find any cards that might be offers
+		doc.Find(".item-card, [class*='card']").Each(func(i int, s *goquery.Selection) {
+			text := strings.ToLower(s.Text())
+			
+			// Filter by category
+			isRelevant := false
+			if category == "games" && (strings.Contains(text, "free game") || strings.Contains(text, "claim")) {
+				isRelevant = true
+			} else if category == "loot" && (strings.Contains(text, "loot") || strings.Contains(text, "in-game")) {
+				isRelevant = true
 			}
 			
-			if title != "" {
-				href, _ := s.Attr("href")
-				imgElement := s.Find("img")
-				imgURL := ""
-				if imgElement.Length() > 0 {
-					imgURL, _ = imgElement.Attr("src")
+			if isRelevant {
+				product := extractProductFromElement(s, category)
+				if product.TileShortName != "" {
+					products = append(products, product)
 				}
-
-				product := Product{
-					TileShortName:          title,
-					TileName:               title,
-					ProductURL:             href,
-					DetailedMarketingBlurb: title,
-					ShortMarketingBlurb:    title,
-					StartDateDatetime:      time.Now().Format(time.RFC3339),
-					EndDateDatetime:        "",
-					TileImage:              imgURL,
-					Category:               category,
-					Type:                   category,
-				}
-
-				products = append(products, product)
 			}
 		})
 	}
@@ -253,29 +207,63 @@ func parseProducts(doc *goquery.Document, category string) ([]Product, error) {
 	return products, nil
 }
 
+func extractProductFromElement(s *goquery.Selection, offerType string) Product {
+	title := strings.TrimSpace(s.Find(".item-card-details__body__primary h3").Text())
+	if title == "" {
+		title = strings.TrimSpace(s.Find("h3").Text())
+	}
+	if title == "" {
+		title = strings.TrimSpace(s.Find("[class*='title']").Text())
+	}
+	
+	productURL, _ := s.Attr("href")
+	imgURL, _ := s.Find(`[data-a-target="card-image"] img`).Attr("src")
+	if imgURL == "" {
+		imgURL, _ = s.Find("img").Attr("src")
+	}
+	
+	// Try to find date information
+	var endDate string
+	dateElement := s.Find(".availability-date span:nth-child(2)")
+	if dateElement.Length() > 0 {
+		endDate = strings.TrimSpace(dateElement.Text())
+	}
+
+	return Product{
+		TileShortName:          title,
+		TileName:               title,
+		ProductURL:             productURL,
+		DetailedMarketingBlurb: title,
+		ShortMarketingBlurb:    title,
+		StartDateDatetime:      time.Now().Format(time.RFC3339),
+		EndDateDatetime:        endDate,
+		TileImage:              imgURL,
+		Category:               offerType,
+		Type:                   offerType,
+	}
+}
+
 func updateCategory(wg *sync.WaitGroup, category string) {
 	defer wg.Done()
 	
-	resp, err := http.Get("https://gaming.amazon.com/home")
-	if err != nil {
-		log.WithField("category", category).Error(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
-	if err != nil {
-		log.WithField("category", category).Error(err)
-		return
-	}
-
-	// Log some debug info about the page content
-	log.WithField("category", category).Info("Scraping Prime Gaming page")
+	log.WithField("category", category).Info("Starting to scrape Prime Gaming")
 	
-	products, err := parseProducts(doc, category)
+	products, err := scrapeWithBrowser(category)
 	if err != nil {
-		log.WithField("step", "parsing").WithField("category", category).Error(err)
-		return
+		log.WithField("step", "scraping").WithField("category", category).Error(err)
+		// Create dummy product on error
+		products = []Product{{
+			TileShortName:          fmt.Sprintf("Scraping failed for %s", category),
+			TileName:               fmt.Sprintf("Scraping failed for %s", category),
+			ProductURL:             "/home",
+			DetailedMarketingBlurb: fmt.Sprintf("Failed to scrape %s offers: %v", category, err),
+			ShortMarketingBlurb:    fmt.Sprintf("Scraping failed for %s", category),
+			StartDateDatetime:      time.Now().Format(time.RFC3339),
+			EndDateDatetime:        "",
+			TileImage:              "",
+			Category:               category,
+			Type:                   category,
+		}}
 	}
 
 	log.WithField("category", category).WithField("count", len(products)).Info("Products found")
@@ -284,7 +272,6 @@ func updateCategory(wg *sync.WaitGroup, category string) {
 	if len(products) == 0 {
 		log.WithField("category", category).Warn("No products found, creating empty feed")
 		
-		// Create a dummy product so we have something in the feed
 		dummyProduct := Product{
 			TileShortName:          fmt.Sprintf("No %s offers available", category),
 			TileName:               fmt.Sprintf("No %s offers available", category),
@@ -335,7 +322,6 @@ func writeFeedToFile(feed feeds.Feed, category string) error {
 		return err
 	}
 
-	// Manual flush because otherwise the RSS feeds will not be created all the time
 	w.Flush()
 	return nil
 }
