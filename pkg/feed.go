@@ -89,8 +89,20 @@ func createFeed(products []Product, category string) (feeds.Feed, error) {
 func scrapeWithBrowser(category string) ([]Product, error) {
 	var products []Product
 	
-	// Create context
-	ctx, cancel := chromedp.NewContext(context.Background())
+	// Create context with options for GitHub Actions/CI environment
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.NoSandbox,
+		chromedp.DisableGPU,
+		chromedp.NoFirstRun,
+		chromedp.NoDefaultBrowserCheck,
+		chromedp.Headless,
+		chromedp.DisableDevShmUsage,
+	)
+	
+	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer cancel()
+	
+	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	// Set timeout
