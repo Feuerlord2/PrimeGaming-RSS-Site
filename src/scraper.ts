@@ -89,9 +89,6 @@ export class AmazonGamesScraper {
   private async readOffer(element: Locator): Promise<Omit<NewOffer, "category"> | null> {
     try {
       const baseOffer = await this.readBaseOffer(element);
-      const validTo = baseOffer.validTo 
-        ? this.parseDateString(baseOffer.validTo)
-        : null;
 
       return {
         source: this.getSource(),
@@ -102,10 +99,9 @@ export class AmazonGamesScraper {
         probable_game_name: cleanGameTitle(baseOffer.title),
         seen_last: DateTime.now().toISO(),
         seen_first: DateTime.now().toISO(),
-        valid_to: validTo?.toISO() ?? null,
+        valid_to: null, // Prime Gaming games usually don't expire
         rawtext: JSON.stringify({
           title: baseOffer.title,
-          enddate: baseOffer.validTo,
         }),
         url: baseOffer.url,
         img_url: baseOffer.imgUrl,
@@ -151,19 +147,14 @@ export class AmazonGamesScraper {
       url = BASE_URL + "/home"; // Fallback URL
     }
 
-    let validTo: string | undefined;
-    try {
-      validTo = await this.readDateFromDetailsPage(element, url);
-    } catch (error) {
-      // Some offers just have no date. That's fine.
-      console.log(`No date found for ${title}`);
-    }
+    // Skip date extraction for now - Prime Gaming doesn't show expiry dates in main list
+    // Most games don't expire anyway, they're permanent additions to your library
 
     return {
       title,
       url,
       imgUrl,
-      ...(validTo && { validTo }),
+      // No validTo date - most Prime Gaming games are permanent
     };
   }
 
