@@ -105,8 +105,8 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 
-	// Set longer timeout for more complex scraping
-	ctx, cancel = context.WithTimeout(ctx, 120*time.Second)
+	// Set timeout
+	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	var htmlContent string
@@ -115,63 +115,30 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		// Navigate to the page
 		chromedp.Navigate("https://gaming.amazon.com/home"),
 		
-		// Wait for any content to load (more flexible)
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			// Try multiple selectors to wait for page load
-			selectors := []string{
-				".offer-list__content",
-				"[data-a-target*='offer-list']",
-				".item-card",
-				"main",
-				"body",
-			}
-			
-			for _, selector := range selectors {
-				err := chromedp.WaitVisible(selector, chromedp.ByQuery).Do(ctx)
-				if err == nil {
-					return nil // Found one, page is loaded
-				}
-			}
-			
-			// If none found, just wait a bit and continue
-			time.Sleep(3 * time.Second)
-			return nil
-		}),
+		// Wait for page to load
+		chromedp.WaitVisible(".offer-list__content", chromedp.ByQuery),
 		
 		// Click on the appropriate tab based on category
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			if category == "games" {
-				// Try to click Games tab, but don't fail if not found
-				err := chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
-				if err != nil {
-					// Try alternative selectors
-					alternativeSelectors := []string{
-						`button:contains("Games")`,
-						`[data-a-target*="Game"]`,
-						`button[role="tab"]:contains("Games")`,
-					}
-					
-					for _, altSelector := range alternativeSelectors {
-						if chromedp.Click(altSelector, chromedp.ByQuery).Do(ctx) == nil {
-							break
-						}
-					}
-				}
+				// Click on Games tab
+				return chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
 			}
-			return nil // Don't fail if tab not found
+			// For loot, we don't need to click any tab as it's the default view
+			return nil
 		}),
 		
-		// Wait briefly
+		// Wait a bit for content to load after tab click
 		chromedp.Sleep(2*time.Second),
 		
-		// Simple scroll to bottom
+		// Scroll to bottom to load all content
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			return chromedp.Evaluate(`
 				window.scrollTo(0, document.body.scrollHeight);
 			`, nil).Do(ctx)
 		}),
 		
-		// Wait for content
+		// Wait for content to load after scrolling
 		chromedp.Sleep(2*time.Second),
 		
 		// Get the HTML content
