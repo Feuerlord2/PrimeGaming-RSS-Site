@@ -122,9 +122,28 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			if category == "games" {
 				// Click on Games tab
-				return chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
+				if err := chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx); err != nil {
+					return err
+				}
+				
+				// Wait for tab to load
+				time.Sleep(1 * time.Second)
+				
+				// Try to remove any filters or show all
+				filterSelectors := []string{
+					`button[data-a-target="show-all"]`,
+					`button[data-a-target="clear-filters"]`,
+					`button:contains("Show All")`,
+					`button:contains("View All")`,
+					`button:contains("See All")`,
+					`[data-a-target*="all"]`,
+				}
+				
+				for _, selector := range filterSelectors {
+					chromedp.Click(selector, chromedp.ByQuery).Do(ctx)
+					// Don't care if it fails, just try all
+				}
 			}
-			// For loot, we don't need to click any tab as it's the default view
 			return nil
 		}),
 		
