@@ -122,33 +122,21 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			if category == "games" {
 				// Click on Games tab
-				if err := chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx); err != nil {
-					return err
-				}
-				
-				// Wait for tab to load
-				time.Sleep(1 * time.Second)
-				
-				// Try to remove any filters or show all
-				filterSelectors := []string{
-					`button[data-a-target="show-all"]`,
-					`button[data-a-target="clear-filters"]`,
-					`button:contains("Show All")`,
-					`button:contains("View All")`,
-					`button:contains("See All")`,
-					`[data-a-target*="all"]`,
-				}
-				
-				for _, selector := range filterSelectors {
-					chromedp.Click(selector, chromedp.ByQuery).Do(ctx)
-					// Don't care if it fails, just try all
-				}
+				return chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
 			}
+			// For loot, we don't need to click any tab as it's the default view
 			return nil
 		}),
 		
 		// Wait a bit for content to load after tab click
 		chromedp.Sleep(2*time.Second),
+		
+		// Try to click "View All" if it exists
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// Just try one simple selector
+			chromedp.Click(`button:contains("View All")`, chromedp.ByQuery).Do(ctx)
+			return nil // Don't fail if not found
+		}),
 		
 		// Scroll to bottom to load all content
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -166,7 +154,7 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		}),
 		
 		// Wait for content to load after scrolling
-		chromedp.Sleep(5*time.Second),
+		chromedp.Sleep(2*time.Second),
 		
 		// Get the HTML content
 		chromedp.OuterHTML("html", &htmlContent),
