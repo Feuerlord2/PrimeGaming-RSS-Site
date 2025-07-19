@@ -4,27 +4,13 @@
     <link>https://feuerlord2.github.io/PrimeGaming-RSS-Site/</link>
     <description>Awesome RSS Feeds about Prime Gaming games offers!</description>
     <managingEditor>DanielWinterEmsdetten+rss@gmail.com (Daniel Winter)</managingEditor>
-    <pubDate>Sat, 19 Jul 2025 18:45:49 +0000</pubDate>
+    <pubDate>Sat, 19 Jul 2025 18:54:03 +0000</pubDate>
     <item>
-      <title>Besiege + The Splintered Sea DLC</title>
-      <link>https://gaming.amazon.com/besiege-the-splintered-sea-dlc-aga/dp/amzn1.pg.item.14455e46-04d2-4e36-b8b9-daf8af1ee646?ingress=amzn&amp;ref_=SM_BesiegeTheSplinteredSeaDLC_S01_FGWP_CRWN</link>
-      <description>Besiege + The Splintered Sea DLC</description>
-      <content:encoded><![CDATA[Besiege + The Splintered Sea DLC]]></content:encoded>
-      <pubDate>Sat, 19 Jul 2025 18:45:49 +0000</pubDate>
-    </item>
-    <item>
-      <title>ENDLESS Space 2 - Definitive Edition</title>
-      <link>https://gaming.amazon.com/endless-space-2-definitive-edition-aga/dp/amzn1.pg.item.56e1933a-814b-45b8-a3c8-c93eb41a7005?ingress=amzn&amp;ref_=SM_ENDLESSSpace2DefinitiveEdition_S01_FGWP_CRWN</link>
-      <description>ENDLESS Space 2 - Definitive Edition</description>
-      <content:encoded><![CDATA[ENDLESS Space 2 - Definitive Edition]]></content:encoded>
-      <pubDate>Sat, 19 Jul 2025 18:45:49 +0000</pubDate>
-    </item>
-    <item>
-      <title>Dungeon of the ENDLESS - Definitive Edition</title>
-      <link>https://gaming.amazon.com/dungeon-of-the-endless-definitive-edition-aga/dp/amzn1.pg.item.64221bbd-d22f-43ce-8489-959556b071e2?ingress=amzn&amp;ref_=SM_DungeonoftheENDLESSDefinitiveEdition_S01_FGWP_CRWN</link>
-      <description>Dungeon of the ENDLESS - Definitive Edition</description>
-      <content:encoded><![CDATA[Dungeon of the ENDLESS - Definitive Edition]]></content:encoded>
-      <pubDate>Sat, 19 Jul 2025 18:45:49 +0000</pubDate>
+      <title>Scraping failed for games</title>
+      <link>https://gaming.amazon.com/home</link>
+      <description>Scraping failed for games</description>
+      <content:encoded><![CDATA[Failed to scrape games offers: failed to scrape with browser: websocket url timeout reached]]></content:encoded>
+      <pubDate>Sat, 19 Jul 2025 18:54:03 +0000</pubDate>
     </item>
   </channel>
 </rss>
