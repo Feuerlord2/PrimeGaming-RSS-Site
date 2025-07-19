@@ -122,10 +122,23 @@ export class AmazonGamesScraper {
       .textContent();
     if (!title) throw new Error("Couldn't find title");
 
-    const imgUrl = await element
-      .locator('[data-a-target="card-image"] img')
-      .getAttribute("src");
-    if (!imgUrl) throw new Error(`Couldn't find image for ${title}`);
+    // More robust image URL extraction with fallback
+    let imgUrl: string;
+    try {
+      imgUrl = await element
+        .locator('[data-a-target="card-image"] img')
+        .getAttribute("src", { timeout: 5000 }) || "";
+    } catch {
+      // Fallback to any img in the card
+      try {
+        imgUrl = await element
+          .locator("img")
+          .first()
+          .getAttribute("src", { timeout: 5000 }) || "";
+      } catch {
+        imgUrl = ""; // No image found, but don't fail
+      }
+    }
 
     let url = BASE_URL;
     try {
@@ -134,7 +147,8 @@ export class AmazonGamesScraper {
         url += path.startsWith("http") ? "" : path;
       }
     } catch {
-      throw new Error(`Couldn't find detail page for ${title}`);
+      console.warn(`Couldn't find detail page for ${title}`);
+      url = BASE_URL + "/home"; // Fallback URL
     }
 
     let validTo: string | undefined;
@@ -142,7 +156,7 @@ export class AmazonGamesScraper {
       validTo = await this.readDateFromDetailsPage(element, url);
     } catch (error) {
       // Some offers just have no date. That's fine.
-      console.log(`No date found for ${title}:`, error);
+      console.log(`No date found for ${title}`);
     }
 
     return {
