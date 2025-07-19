@@ -115,59 +115,63 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		// Navigate to the page
 		chromedp.Navigate("https://gaming.amazon.com/home"),
 		
-		// Wait for page to load
-		chromedp.WaitVisible(".offer-list__content", chromedp.ByQuery),
+		// Wait for any content to load (more flexible)
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// Try multiple selectors to wait for page load
+			selectors := []string{
+				".offer-list__content",
+				"[data-a-target*='offer-list']",
+				".item-card",
+				"main",
+				"body",
+			}
+			
+			for _, selector := range selectors {
+				err := chromedp.WaitVisible(selector, chromedp.ByQuery).Do(ctx)
+				if err == nil {
+					return nil // Found one, page is loaded
+				}
+			}
+			
+			// If none found, just wait a bit and continue
+			time.Sleep(3 * time.Second)
+			return nil
+		}),
 		
 		// Click on the appropriate tab based on category
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			if category == "games" {
-				// Click on Games tab
-				return chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
+				// Try to click Games tab, but don't fail if not found
+				err := chromedp.Click(`button[data-a-target="offer-filter-button-Game"]`, chromedp.ByQuery).Do(ctx)
+				if err != nil {
+					// Try alternative selectors
+					alternativeSelectors := []string{
+						`button:contains("Games")`,
+						`[data-a-target*="Game"]`,
+						`button[role="tab"]:contains("Games")`,
+					}
+					
+					for _, altSelector := range alternativeSelectors {
+						if chromedp.Click(altSelector, chromedp.ByQuery).Do(ctx) == nil {
+							break
+						}
+					}
+				}
 			}
-			// For loot, we don't need to click any tab as it's the default view
-			return nil
+			return nil // Don't fail if tab not found
 		}),
 		
-		// Wait for content to load after tab click
+		// Wait briefly
 		chromedp.Sleep(2*time.Second),
 		
-		// Scroll efficiently to load all content
+		// Simple scroll to bottom
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			// Do multiple scrolls to trigger lazy loading
-			for i := 0; i < 5; i++ {
-				// Scroll down
-				if err := chromedp.Evaluate(`
-					window.scrollTo(0, document.body.scrollHeight);
-				`, nil).Do(ctx); err != nil {
-					return err
-				}
-				// Short wait between scrolls
-				time.Sleep(500 * time.Millisecond)
-			}
-			return nil
+			return chromedp.Evaluate(`
+				window.scrollTo(0, document.body.scrollHeight);
+			`, nil).Do(ctx)
 		}),
 		
-		// Try to click "Load More" or "Show More" buttons if they exist
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			// Try common "load more" selectors
-			loadMoreSelectors := []string{
-				`button[data-a-target="load-more"]`,
-				`[class*="load-more"]`,
-				`[class*="show-more"]`,
-			}
-			
-			for _, selector := range loadMoreSelectors {
-				err := chromedp.Click(selector, chromedp.ByQuery).Do(ctx)
-				if err == nil {
-					// If we found and clicked a button, wait briefly
-					time.Sleep(1 * time.Second)
-					break
-				}
-			}
-			return nil // Don't fail if no "load more" button found
-		}),
-		
-		// Final wait for content
+		// Wait for content
 		chromedp.Sleep(2*time.Second),
 		
 		// Get the HTML content
