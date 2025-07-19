@@ -128,18 +128,55 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 			return nil
 		}),
 		
-		// Wait a bit for content to load after tab click
-		chromedp.Sleep(2*time.Second),
+		// Wait for content to load after tab click
+		chromedp.Sleep(3*time.Second),
 		
-		// Scroll to bottom to load all content
+		// Scroll multiple times to load all content (lazy loading)
 		chromedp.ActionFunc(func(ctx context.Context) error {
+			for i := 0; i < 10; i++ {
+				// Scroll down gradually
+				if err := chromedp.Evaluate(fmt.Sprintf(`
+					window.scrollTo(0, %d);
+				`, (i+1)*500), nil).Do(ctx); err != nil {
+					return err
+				}
+				// Wait between scrolls to allow content to load
+				time.Sleep(1 * time.Second)
+			}
+			
+			// Final scroll to absolute bottom
 			return chromedp.Evaluate(`
 				window.scrollTo(0, document.body.scrollHeight);
 			`, nil).Do(ctx)
 		}),
 		
-		// Wait for content to load after scrolling
-		chromedp.Sleep(2*time.Second),
+		// Wait longer for all lazy-loaded content
+		chromedp.Sleep(5*time.Second),
+		
+		// Try to click "Load More" or "Show More" buttons if they exist
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// Try different possible "load more" selectors
+			loadMoreSelectors := []string{
+				`button[data-a-target="load-more"]`,
+				`button:contains("Load More")`,
+				`button:contains("Show More")`,
+				`[class*="load-more"]`,
+				`[class*="show-more"]`,
+			}
+			
+			for _, selector := range loadMoreSelectors {
+				err := chromedp.Click(selector, chromedp.ByQuery).Do(ctx)
+				if err == nil {
+					// If we found and clicked a button, wait for content to load
+					time.Sleep(3 * time.Second)
+					break
+				}
+			}
+			return nil // Don't fail if no "load more" button found
+		}),
+		
+		// Final wait
+		chromedp.Sleep(3*time.Second),
 		
 		// Get the HTML content
 		chromedp.OuterHTML("html", &htmlContent),
