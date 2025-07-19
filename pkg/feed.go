@@ -96,7 +96,7 @@ func scrapeWithBrowser(category string) ([]Product, error) {
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
 		chromedp.Headless,
-		chromedp.DisableDevShmUsage,
+		chromedp.Flag("disable-dev-shm-usage", true),
 	)
 	
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
