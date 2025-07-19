@@ -4,13 +4,100 @@
     <link>https://feuerlord2.github.io/PrimeGaming-RSS-Site/</link>
     <description>Awesome RSS Feeds about Prime Gaming games offers!</description>
     <managingEditor>DanielWinterEmsdetten+rss@gmail.com (Daniel Winter)</managingEditor>
-    <pubDate>Sat, 19 Jul 2025 17:22:12 +0000</pubDate>
+    <pubDate>Sat, 19 Jul 2025 18:02:23 +0000</pubDate>
     <item>
-      <title>No games offers available</title>
+      <title>Scraping failed for games</title>
       <link>https://gaming.amazon.com/home</link>
-      <description>No games offers</description>
-      <content:encoded><![CDATA[Currently no games offers are available on Prime Gaming.]]></content:encoded>
-      <pubDate>Sat, 19 Jul 2025 17:22:12 +0000</pubDate>
+      <description>Scraping failed for games</description>
+      <content:encoded><![CDATA[Failed to scrape games offers: failed to scrape with browser: chrome failed to start:
+[3807:3807:0719/180215.967245:FATAL:content/browser/zygote_host/zygote_host_impl_linux.cc:132] No usable sandbox! If you are running on Ubuntu 23.10+ or another Linux distro that has disabled unprivileged user namespaces with AppArmor, see https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md. Otherwise see https://chromium.googlesource.com/chromium/src/+/main/docs/linux/suid_sandbox_development.md for more information on developing with the (older) SUID sandbox. If you want to live dangerously and need an immediate workaround, you can try using --no-sandbox.
+#0 0x55f10e71e492 base::debug::CollectStackTrace()
+#1 0x55f10e70b49e base::debug::StackTrace::StackTrace()
+#2 0x55f10e65879a logging::LogMessage::Flush()
+#3 0x55f10e659219 logging::LogMessageFatal::~LogMessageFatal()
+#4 0x55f10c5d4fae content::ZygoteHostImpl::Init()
+#5 0x55f10d91033c content::ContentMainRunnerImpl::Initialize()
+#6 0x55f10d90e005 content::RunContentProcess()
+#7 0x55f10d90e367 content::ContentMain()
+#8 0x55f10913d385 ChromeMain
+#9 0x7f27a4c2a1ca (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9)
+#10 0x7f27a4c2a28b __libc_start_main
+#11 0x55f10913d02a _start
+Crash keys:
+  "switch-32" = "about:blank"
+  "switch-31" = "--use-angle=swiftshader-webgl"
+  "switch-30" = "--ozone-override-screen-size=800,600"
+  "switch-29" = "--ozone-platform=headless"
+  "switch-28" = "--noerrdialogs"
+  "switch-27" = "--remote-debugging-port=0"
+  "switch-26" = "--user-data-dir=/tmp/chromedp-runner4082769819"
+  "switch-25" = "--disable-sync"
+  "switch-24" = "--force-color-profile=srgb"
+  "switch-23" = "--disable-ipc-flooding-protection"
+  "switch-22" = "--disable-hang-monitor"
+  "switch-21" = "--disable-backgrounding-occluded-windows"
+  "switch-20" = "--use-mock-keychain"
+  "switch-19" = "--disable-background-networking"
+  "switch-18" = "--headless"
+  "switch-17" = "--no-first-run"
+  "switch-16" = "--enable-automation"
+  "switch-15" = "--disable-background-timer-throttling"
+  "switch-14" = "--no-default-browser-check"
+  "switch-13" = "--disable-popup-blocking"
+  "switch-12" = "--metrics-recording-only"
+  "switch-11" = "--disable-extensions"
+  "switch-10" = "--mute-audio"
+  "switch-9" = "--hide-scrollbars"
+  "switch-8" = "--disable-prompt-on-repost"
+  "switch-7" = "--password-store=basic"
+  "switch-6" = "--disable-renderer-backgrounding"
+  "switch-5" = "--disable-dev-shm-usage"
+  "switch-4" = "--disable-default-apps"
+  "switch-3" = "--disable-breakpad"
+  "switch-2" = "--safebrowsing-disable-auto-update"
+  "switch-1" = "--disable-client-side-phishing-detection"
+  "num-switches" = "34"
+  "commandline-disabled-feature-3" = "BlinkGenPropertyTrees"
+  "commandline-disabled-feature-2" = "Translate"
+  "commandline-disabled-feature-1" = "site-per-process"
+  "commandline-enabled-feature-2" = "NetworkServiceInProcess"
+  "commandline-enabled-feature-1" = "NetworkService"
+  "osarch" = "x86_64"
+  "pid" = "3807"
+  "ptype" = "browser"
+
+[0719/180217.538486:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq: No such file or directory (2)
+[0719/180217.538641:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:145] open /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq: No such file or directory (2)
+Received signal 6
+#0 0x55f10e71e492 base::debug::CollectStackTrace()
+#1 0x55f10e70b49e base::debug::StackTrace::StackTrace()
+#2 0x55f10e71df08 base::debug::(anonymous namespace)::StackDumpSignalHandler()
+#3 0x7f27a4c45330 (/usr/lib/x86_64-linux-gnu/libc.so.6+0x4532f)
+#4 0x7f27a4c9eb2c pthread_kill
+#5 0x7f27a4c4527e gsignal
+#6 0x7f27a4c288ff abort
+#7 0x55f10e6fee65 base::debug::BreakDebuggerAsyncSafe()
+#8 0x55f10e6591d3 base::RepeatingCallback<>::Run()
+#9 0x55f10e659095 logging::LogMessage::HandleFatal()
+#10 0x55f10e658d04 logging::LogMessage::Flush()
+#11 0x55f10e659219 logging::LogMessageFatal::~LogMessageFatal()
+#12 0x55f10c5d4fae content::ZygoteHostImpl::Init()
+#13 0x55f10d91033c content::ContentMainRunnerImpl::Initialize()
+#14 0x55f10d90e005 content::RunContentProcess()
+#15 0x55f10d90e367 content::ContentMain()
+#16 0x55f10913d385 ChromeMain
+#17 0x7f27a4c2a1ca (/usr/lib/x86_64-linux-gnu/libc.so.6+0x2a1c9)
+#18 0x7f27a4c2a28b __libc_start_main
+#19 0x55f10913d02a _start
+  r8: 00000c00000c3e63  r9: 0000000000000928 r10: 0000000000000008 r11: 0000000000000246
+ r12: 0000000000000006 r13: 0000000000000b8b r14: 0000000000000016 r15: 00007fff4a607bf0
+  di: 0000000000000edf  si: 0000000000000edf  bp: 00007fff4a607aa0  bx: 0000000000000edf
+  dx: 0000000000000006  ax: 0000000000000000  cx: 00007f27a4c9eb2c  sp: 00007fff4a607a60
+  ip: 00007f27a4c9eb2c efl: 0000000000000246 cgf: 002b000000000033 erf: 0000000000000000
+ trp: 0000000000000000 msk: 0000000000000000 cr2: 0000000000000000
+[end of stack trace]
+]]></content:encoded>
+      <pubDate>Sat, 19 Jul 2025 18:02:23 +0000</pubDate>
     </item>
   </channel>
 </rss>
