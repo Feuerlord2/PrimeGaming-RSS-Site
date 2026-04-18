@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found | Prime Gaming RSS</title>
+  <meta name="description" content="Page not found. Return to the Prime Gaming RSS Feed.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%230F0F23'/><rect x='8' y='8' width='84' height='84' rx='10' fill='none' stroke='%237C3AED' stroke-width='2' opacity='0.6'/><path d='M30 42 L50 30 L70 42 L70 58 L50 70 L30 58Z' fill='none' stroke='%23A78BFA' stroke-width='3'/><circle cx='50' cy='50' r='6' fill='%237C3AED'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-text">PRIME GAMING</div>
+    <div class="preloader-bar"></div>
+  </div>
+
+  <!-- Scene Background -->
+  <div class="scene-bg" aria-hidden="true"></div>
+
+  <!-- Neon Grid -->
+  <div class="neon-grid" aria-hidden="true"></div>
+
+  <!-- CRT Scanlines -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Corner Marks -->
+  <div class="corner-mark corner-mark--tl" aria-hidden="true"></div>
+  <div class="corner-mark corner-mark--tr" aria-hidden="true"></div>
+  <div class="corner-mark corner-mark--bl" aria-hidden="true"></div>
+  <div class="corner-mark corner-mark--br" aria-hidden="true"></div>
+
+  <!-- Page -->
+  <div class="page error-page">
+
+    <div class="error-code" aria-label="404 error">404</div>
+
+    <h1 class="error-title">Page Not Found</h1>
+
+    <p class="error-desc">The signal was lost in the void. This page does not exist or has been moved to another dimension.</p>
+
+    <a href="./" class="back-btn">
+      <!-- Arrow Left Icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Back to Home
+    </a>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // --- Preloader ---
+      var preloader = document.getElementById('preloader');
+      function hidePreloader() {
+        if (preloader) preloader.classList.add('hidden');
+      }
+      window.addEventListener('load', function () {
+        setTimeout(hidePreloader, 600);
+      });
+      // Fallback: hide after 3s regardless
+      setTimeout(hidePreloader, 3000);
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prime Gaming RSS Feed</title>
+  <meta name="description" content="Free games for Amazon Prime members — delivered to your RSS reader, updated every 8 hours.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%230F0F23'/><rect x='8' y='8' width='84' height='84' rx='10' fill='none' stroke='%237C3AED' stroke-width='2' opacity='0.6'/><path d='M30 42 L50 30 L70 42 L70 58 L50 70 L30 58Z' fill='none' stroke='%23A78BFA' stroke-width='3'/><circle cx='50' cy='50' r='6' fill='%237C3AED'/></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-text">PRIME GAMING</div>
+    <div class="preloader-bar"></div>
+  </div>
+
+  <!-- Scene Background -->
+  <div class="scene-bg" aria-hidden="true"></div>
+
+  <!-- Neon Grid -->
+  <div class="neon-grid" aria-hidden="true"></div>
+
+  <!-- CRT Scanlines -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Neon Particles -->
+  <div class="particles" id="particles" aria-hidden="true"></div>
+
+  <!-- Scan Line -->
+  <div class="scan-line" aria-hidden="true"></div>
+
+  <!-- Corner Marks -->
+  <div class="corner-mark corner-mark--tl" aria-hidden="true"></div>
+  <div class="corner-mark corner-mark--tr" aria-hidden="true"></div>
+  <div class="corner-mark corner-mark--bl" aria-hidden="true"></div>
+  <div class="corner-mark corner-mark--br" aria-hidden="true"></div>
+
+  <!-- Page -->
+  <div class="page">
+
+    <!-- Header -->
+    <header class="site-header">
+      <p class="eyebrow">RSS Feed</p>
+      <h1 class="site-title">
+        <span class="site-title-prime">Prime</span>
+        <span class="site-title-gaming">Gaming</span>
+      </h1>
+      <p class="site-subtitle">RSS Feed</p>
+      <p class="site-desc">Free games for Amazon Prime members &mdash; delivered to your RSS reader, updated every 8 hours.</p>
+    </header>
+
+    <!-- Feed Card -->
+    <a href="./games.rss" class="feed-card" id="feedCard">
+      <!-- Gamepad Icon -->
+      <div class="card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="11" x2="10" y2="11"/>
+          <line x1="8" y1="9" x2="8" y2="13"/>
+          <line x1="15" y1="12" x2="15.01" y2="12"/>
+          <line x1="18" y1="10" x2="18.01" y2="10"/>
+          <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/>
+        </svg>
+      </div>
+      <div class="card-tag">
+        <span class="card-tag-dot"></span>
+        FREE GAMES
+      </div>
+      <h2 class="card-title">Games &amp; Loot</h2>
+      <p class="card-desc">All currently available free games for Prime members. Claim them before they're gone.</p>
+      <span class="card-cta">
+        Subscribe to feed
+        <!-- Arrow Right Icon -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </span>
+    </a>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p class="footer-line">Not affiliated with Amazon.</p>
+      <p class="footer-line">For the community.</p>
+    </footer>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // --- Preloader ---
+      var preloader = document.getElementById('preloader');
+      function hidePreloader() {
+        if (preloader) preloader.classList.add('hidden');
+      }
+      window.addEventListener('load', function () {
+        setTimeout(hidePreloader, 600);
+      });
+      setTimeout(hidePreloader, 3000);
+
+      // --- Neon Particles ---
+      var container = document.getElementById('particles');
+      if (container) {
+        for (var i = 0; i < 35; i++) {
+          var p = document.createElement('div');
+          p.className = 'particle';
+          p.style.left = (Math.random() * 100) + '%';
+          p.style.setProperty('--dur', (8 + Math.random() * 10) + 's');
+          p.style.setProperty('--delay', (Math.random() * 12) + 's');
+          p.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+          container.appendChild(p);
+        }
+      }
+
+      // --- 3D Card Tilt + Glow ---
+      var card = document.getElementById('feedCard');
+      if (card) {
+        card.addEventListener('mousemove', function (e) {
+          var rect = card.getBoundingClientRect();
+          var x = (e.clientX - rect.left) / rect.width;
+          var y = (e.clientY - rect.top) / rect.height;
+          var tiltX = (y - 0.5) * -12;
+          var tiltY = (x - 0.5) * 12;
+          card.style.transform = 'perspective(800px) rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg) translateY(-4px) scale(1.01)';
+          card.style.setProperty('--glow-x', (x * 100) + '%');
+          card.style.setProperty('--glow-y', (y * 100) + '%');
+        });
+
+        card.addEventListener('mouseleave', function () {
+          card.style.transform = '';
+          card.style.setProperty('--glow-x', '50%');
+          card.style.setProperty('--glow-y', '50%');
+        });
+      }
+
+      // --- Mouse Parallax on Background ---
+      var sceneBg = document.querySelector('.scene-bg');
+      var neonGrid = document.querySelector('.neon-grid');
+      var ticking = false;
+
+      document.addEventListener('mousemove', function (e) {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          var mx = (e.clientX / window.innerWidth - 0.5);
+          var my = (e.clientY / window.innerHeight - 0.5);
+          if (sceneBg) {
+            sceneBg.style.transform = 'translate(' + (mx * 15) + 'px, ' + (my * 15) + 'px)';
+          }
+          if (neonGrid) {
+            neonGrid.style.transform = 'translate(' + (mx * -8) + 'px, ' + (my * -5) + 'px)';
+          }
+          ticking = false;
+        });
+      });
+
+    })();
+  </script>
+
+</body>
+</html>
