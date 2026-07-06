@@ -1,37 +1,12 @@
-export enum OfferSource {
-  AMAZON = "AMAZON"
-}
-
-export enum OfferDuration {
-  CLAIMABLE = "CLAIMABLE"
-}
-
-export enum OfferPlatform {
-  PC = "PC"
-}
-
-export enum OfferType {
-  GAME = "GAME"
-}
-
-export interface NewOffer {
-  source: OfferSource;
-  duration: OfferDuration;
-  type: OfferType;
-  platform: OfferPlatform;
-  title: string;
-  probable_game_name: string;
-  seen_last: string;
-  seen_first: string;
-  valid_to: string | null;
-  rawtext: string;
-  url: string;
-  img_url: string;
-}
-
-export interface AmazonBaseOffer {
+/** A free game offer as shown on the Prime Gaming page. */
+export interface ScrapedOffer {
   title: string;
   url: string;
   imgUrl: string;
-  validTo?: string;
+}
+
+/** A scraped offer enriched with the date it first appeared in the feed. */
+export interface GameOffer extends ScrapedOffer {
+  /** ISO 8601 timestamp of when this offer was first seen. */
+  seenFirst: string;
 }

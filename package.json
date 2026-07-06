@@ -1,25 +1,26 @@
 {
   "name": "primegaming-rss-site",
-  "version": "1.0.0",
-  "description": "RSS feeds for Prime Gaming offers",
+  "version": "2.0.0",
+  "description": "RSS feed for free Prime Gaming offers",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
-    "playwright": "^1.40.0",
-    "luxon": "^3.4.4",
+    "playwright": "^1.54.0",
     "rss": "^1.2.2"
   },
   "devDependencies": {
-    "@types/node": "^20.8.0",
-    "@types/luxon": "^3.3.0",
+    "@types/node": "^22.0.0",
     "@types/rss": "^0.0.32",
-    "typescript": "^5.2.0",
-    "ts-node": "^10.9.0",
-    "vitest": "^0.34.0"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
   }
 }
