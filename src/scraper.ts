@@ -76,6 +76,21 @@ async function scrapeOnce(): Promise<ScrapedOffer[]> {
       })),
     );
 
+    if (cards.length === 0) {
+      // Leave enough of a trace in the Actions log to tell "Amazon changed
+      // its markup" apart from "the page didn't load".
+      const pageTitle = await page.title().catch(() => "<unknown>");
+      const anyCards = await page.locator(".item-card__action").count();
+      const anyLists = await page
+        .locator('[data-a-target^="offer-list"]')
+        .count();
+      console.warn(
+        `No offer cards matched "${CARD_SELECTOR}". page title="${pageTitle}", ` +
+          `generic cards=${anyCards}, offer lists=${anyLists} — ` +
+          "Amazon may have changed its markup.",
+      );
+    }
+
     const offers: ScrapedOffer[] = [];
     for (const card of cards) {
       const title = cleanGameTitle(card.title);

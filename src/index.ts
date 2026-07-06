@@ -2,9 +2,9 @@ import fs from "fs/promises";
 import path from "path";
 import { createRSSFeed } from "./rss";
 import { scrapeOffers } from "./scraper";
-import { loadState, saveState } from "./state";
+import { loadState, mergeState, saveState } from "./state";
 import type { GameOffer } from "./types";
-import { feedsEqual } from "./utils";
+import { feedsEqual, offerKey } from "./utils";
 
 const RSS_PATH = path.join(process.cwd(), "docs", "games.rss");
 const STATE_PATH = path.join(process.cwd(), "data", "state.json");
@@ -16,14 +16,14 @@ async function main(): Promise<void> {
 
   // Preserve first-seen dates across runs so items keep stable pubDates and
   // the feed (and git history) only changes when the offers actually change.
-  const seenDates = await loadState(STATE_PATH);
+  const previous = await loadState(STATE_PATH);
   const now = new Date().toISOString();
   const offers: GameOffer[] = scraped.map((offer) => ({
     ...offer,
-    seenFirst: seenDates[offer.url] ?? now,
+    seenFirst: previous[offerKey(offer.url)]?.first ?? now,
   }));
 
-  const added = offers.filter((offer) => !seenDates[offer.url]);
+  const added = offers.filter((offer) => !previous[offerKey(offer.url)]);
   if (added.length > 0) {
     console.log(`New offers: ${added.map((offer) => offer.title).join(", ")}`);
   }
@@ -39,7 +39,7 @@ async function main(): Promise<void> {
   await fs.writeFile(RSS_PATH, rssContent, "utf8");
   await saveState(
     STATE_PATH,
-    Object.fromEntries(offers.map((offer) => [offer.url, offer.seenFirst])),
+    mergeState(previous, offers.map((offer) => offerKey(offer.url)), now),
   );
   console.log(`RSS feed written to ${RSS_PATH}`);
 }

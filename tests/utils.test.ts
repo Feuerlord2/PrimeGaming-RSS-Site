@@ -4,6 +4,7 @@ import {
   cleanGameTitle,
   escapeHtml,
   feedsEqual,
+  offerKey,
   OFFER_URL,
   sortOffers,
 } from "../src/utils";
@@ -44,8 +45,38 @@ describe("buildClaimUrl", () => {
     );
   });
 
+  it("rewrites claim URLs on any gaming.amazon locale domain", () => {
+    expect(buildClaimUrl("https://gaming.amazon.co.uk/claims/x")).toBe(
+      "https://luna.amazon.de/claims/x",
+    );
+  });
+
+  it("resolves protocol-relative hrefs", () => {
+    expect(buildClaimUrl("//gaming.amazon.com/claims/x")).toBe(
+      "https://luna.amazon.de/claims/x",
+    );
+  });
+
   it("falls back to the offers page for missing hrefs", () => {
     expect(buildClaimUrl("")).toBe(OFFER_URL);
+  });
+});
+
+describe("offerKey", () => {
+  it("extracts the stable item ID, ignoring tracking params", () => {
+    const key = "amzn1.pg.item.34a07e29-18da-495f-9673-266fd4722390";
+    expect(
+      offerKey(`https://luna.amazon.de/claims/x/dp/${key}?g=s&ref_=SM_X_S01`),
+    ).toBe(key);
+    expect(
+      offerKey(`https://luna.amazon.de/claims/x/dp/${key}?ref_=SM_X_S02`),
+    ).toBe(key);
+  });
+
+  it("falls back to the full URL when no item ID is present", () => {
+    expect(offerKey("https://example.com/game")).toBe(
+      "https://example.com/game",
+    );
   });
 });
 

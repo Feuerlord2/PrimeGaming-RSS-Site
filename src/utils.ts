@@ -17,19 +17,34 @@ export function escapeHtml(text: string): string {
 
 /**
  * Turn a card's href into an absolute claim URL. Amazon serves Prime Gaming
- * claim pages on Luna — gaming.amazon.com/claims/* URLs return 404, so the
- * domain is rewritten.
+ * claim pages on Luna — gaming.amazon.* /claims/ URLs return 404 on any
+ * locale domain, so the host is rewritten.
  */
 export function buildClaimUrl(href: string): string {
   if (!href) return OFFER_URL;
-  let url = href.startsWith("http") ? href : BASE_URL + href;
-  if (url.includes("/claims/")) {
-    url = url.replace(
-      /^https?:\/\/gaming\.amazon\.(com|de)/i,
-      "https://luna.amazon.de",
-    );
+  let url: URL;
+  try {
+    url = new URL(href, BASE_URL);
+  } catch {
+    return OFFER_URL;
   }
-  return url;
+  if (
+    url.pathname.includes("/claims/") &&
+    url.hostname.toLowerCase().startsWith("gaming.amazon.")
+  ) {
+    url.hostname = "luna.amazon.de";
+  }
+  return url.toString();
+}
+
+/**
+ * Stable identity for an offer. Claim URLs carry rotating tracking params
+ * (ref_=SM_..._S01_...), so state keyed by full URL would re-stamp every
+ * offer as new whenever Amazon rotates a campaign tag — the item ID in the
+ * URL path is stable across those rotations.
+ */
+export function offerKey(url: string): string {
+  return url.match(/amzn1\.pg\.item\.[0-9a-f-]+/i)?.[0].toLowerCase() ?? url;
 }
 
 /**
@@ -47,6 +62,6 @@ export function sortOffers(offers: GameOffer[]): GameOffer[] {
 /** Compare two feeds ignoring the always-changing lastBuildDate. */
 export function feedsEqual(a: string, b: string): boolean {
   const strip = (xml: string) =>
-    xml.replace(/<lastBuildDate>[^<]*<\/lastBuildDate>/, "");
+    xml.replace(/<lastBuildDate>[^<]*<\/lastBuildDate>/g, "");
   return strip(a) === strip(b);
 }

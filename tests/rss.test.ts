@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createRSSFeed } from "../src/rss";
 import type { GameOffer } from "../src/types";
+import { feedsEqual } from "../src/utils";
 
 const offer: GameOffer = {
   title: "Terraforming Mars",
@@ -28,8 +29,8 @@ describe("createRSSFeed", () => {
   });
 
   it("is deterministic apart from lastBuildDate", () => {
-    const strip = (xml: string) =>
-      xml.replace(/<lastBuildDate>[^<]*<\/lastBuildDate>/, "");
-    expect(strip(createRSSFeed([offer]))).toBe(strip(createRSSFeed([offer])));
+    expect(feedsEqual(createRSSFeed([offer]), createRSSFeed([offer]))).toBe(
+      true,
+    );
   });
 });
